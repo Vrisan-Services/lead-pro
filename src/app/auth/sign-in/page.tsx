@@ -43,6 +43,7 @@ export default function SignInPage() {
       
       if (response.status === 200) {
         toast.success('Login successful');
+        localStorage.setItem("user", JSON.stringify(response.data));
         router.push('/dashboard');
       } else {
         toast.error(response.message || 'Invalid OTP');
