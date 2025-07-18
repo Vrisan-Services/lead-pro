@@ -42,7 +42,7 @@ export function LeadsDataTable({ leads }: LeadsDataTableProps) {
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "INR",
     }).format(value)
 
   return (
@@ -62,21 +62,21 @@ export function LeadsDataTable({ leads }: LeadsDataTableProps) {
           <TableBody>
             {leads.map((lead) => (
               <TableRow key={lead.id} className="group transition-colors hover:bg-muted/50" >
-                <TableCell className="font-medium">{lead.leadName}</TableCell>
-                <TableCell className="hidden sm:table-cell text-muted-foreground">{lead.contactDetails}</TableCell>
+                <TableCell className="font-medium">{lead.LeadName}</TableCell>
+                <TableCell className="hidden sm:table-cell text-muted-foreground">{lead.ContactDetails}</TableCell>
                 <TableCell>
-                  <Badge variant="outline" className={cn("border-transparent", stageBadgeVariant[lead.stage])}>
-                    {lead.stage}
+                  <Badge variant="outline" className={cn("border-transparent", stageBadgeVariant[lead.Stage])}>
+                    {lead.Stage}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right">{formatCurrency(lead.dealValue)}</TableCell>
+                <TableCell className="text-right">{formatCurrency(lead.Budget)}</TableCell>
                 <TableCell className="text-right hidden md:table-cell text-muted-foreground">
-                  {lead.stage === "Closed"
-                    ? formatCurrency(lead.dealValue * COMMISSION_RATE)
+                  {lead.Stage === "Closed"
+                    ? formatCurrency(lead.Budget * COMMISSION_RATE)
                     : "-"}
                 </TableCell>
                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleViewLead(lead)} aria-label={`View details for ${lead.leadName}`}>
+                    <Button variant="ghost" size="icon" onClick={() => handleViewLead(lead)} aria-label={`View details for ${lead.LeadName}`}>
                         <Eye className="h-4 w-4" />
                     </Button>
                 </TableCell>

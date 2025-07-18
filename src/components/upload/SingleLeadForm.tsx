@@ -1,15 +1,17 @@
+
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { PlusCircle } from "lucide-react"
+import toast from "react-hot-toast"
+import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,7 +27,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/hooks/use-toast"
+import { leadsAPI } from "@/lib/leads"
 
 const formSchema = z.object({
   leadName: z.string().min(2, "Lead name must be at least 2 characters."),
@@ -37,7 +39,7 @@ const formSchema = z.object({
 })
 
 export function SingleLeadForm() {
-  const { toast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -50,13 +52,41 @@ export function SingleLeadForm() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    toast({
-      title: "Lead Submitted!",
-      description: `${values.leadName} has been added to your leads.`,
-    })
-    form.reset()
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true)
+    
+    try {
+      const response = await leadsAPI.createSingleLead(values)
+      
+      if (response.success) {
+        toast.success(
+          <div>
+            <p className="font-bold">Lead Created Successfully!</p>
+            <p>{values.leadName} has been added to your leads.</p>
+          </div>,
+          {
+            duration: 4000,
+            position: "top-center",
+          }
+        )
+        form.reset()
+      } else {
+        throw new Error(response.error || "Failed to create lead")
+      }
+    } catch (error) {
+      toast.error(
+        <div>
+          <p className="font-bold">Error Creating Lead</p>
+          <p>{error instanceof Error ? error.message : "An unknown error occurred"}</p>
+        </div>,
+        {
+          duration: 4000,
+          position: "top-center",
+        }
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -95,42 +125,42 @@ export function SingleLeadForm() {
               )}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
+              <FormField
                 control={form.control}
                 name="dealValue"
                 render={({ field }) => (
-                    <FormItem>
+                  <FormItem>
                     <FormLabel>Deal Value ($)</FormLabel>
                     <FormControl>
-                        <Input type="number" placeholder="e.g., 5000" {...field} />
+                      <Input type="number" placeholder="e.g., 5000" {...field} />
                     </FormControl>
                     <FormMessage />
-                    </FormItem>
+                  </FormItem>
                 )}
-                />
-                <FormField
+              />
+              <FormField
                 control={form.control}
                 name="stage"
                 render={({ field }) => (
-                    <FormItem>
+                  <FormItem>
                     <FormLabel>Stage</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
+                      <FormControl>
                         <SelectTrigger>
-                            <SelectValue placeholder="Select a stage" />
+                          <SelectValue placeholder="Select a stage" />
                         </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
+                      </FormControl>
+                      <SelectContent>
                         <SelectItem value="New">New</SelectItem>
                         <SelectItem value="In Progress">In Progress</SelectItem>
                         <SelectItem value="Qualified">Qualified</SelectItem>
                         <SelectItem value="Closed">Closed</SelectItem>
-                        </SelectContent>
+                      </SelectContent>
                     </Select>
                     <FormMessage />
-                    </FormItem>
+                  </FormItem>
                 )}
-                />
+              />
             </div>
             <FormField
               control={form.control}
@@ -141,14 +171,11 @@ export function SingleLeadForm() {
                   <FormControl>
                     <Textarea placeholder="Describe the last contact..." {...field} />
                   </FormControl>
-                  <FormDescription>
-                    A brief summary of your most recent communication.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-             <FormField
+            <FormField
               control={form.control}
               name="additionalDetails"
               render={({ field }) => (
@@ -161,9 +188,13 @@ export function SingleLeadForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Lead
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={isSubmitting}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {isSubmitting ? "Creating Lead..." : "Add Lead"}
             </Button>
           </form>
         </Form>

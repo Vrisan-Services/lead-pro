@@ -47,12 +47,12 @@ export function LeadDetailDialog({
     setInsights(null)
     try {
       const result = await leadInsights({
-        leadName: lead.leadName,
-        contactDetails: lead.contactDetails,
-        dealValue: lead.dealValue,
-        stage: lead.stage,
-        lastInteraction: lead.lastInteraction,
-        additionalDetails: lead.additionalDetails || "N/A",
+        leadName: lead.LeadName,
+        contactDetails: lead.ContactDetails,
+        dealValue: lead.Budget,
+        stage: lead.Stage,
+        lastInteraction: lead.LastInteraction,
+        additionalDetails: lead.AdditionalDetails || "N/A",
       })
       setInsights(result)
     } catch (error) {
@@ -71,28 +71,28 @@ export function LeadDetailDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{lead.leadName}</DialogTitle>
+          <DialogTitle className="text-2xl">{lead.LeadName}</DialogTitle>
           <DialogDescription>
             Detailed information and AI-powered insights for your lead.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-2 gap-4">
-            <div><Badge variant="outline">{lead.stage}</Badge></div>
-            <div className="text-right font-semibold text-lg">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(lead.dealValue)}</div>
+            <div><Badge variant="outline">{lead.Stage}</Badge></div>
+            <div className="text-right font-semibold text-lg">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(lead.Budget)}</div>
           </div>
           <div className="space-y-2">
             <h4 className="font-medium">Contact Details</h4>
-            <p className="text-muted-foreground">{lead.contactDetails}</p>
+            <p className="text-muted-foreground">{lead.ContactDetails}</p>
           </div>
           <div className="space-y-2">
             <h4 className="font-medium">Last Interaction</h4>
-            <p className="text-muted-foreground">{lead.lastInteraction}</p>
+            <p className="text-muted-foreground">{lead.LastInteraction}</p>
           </div>
-          {lead.additionalDetails && (
+          {lead.AdditionalDetails && (
             <div className="space-y-2">
               <h4 className="font-medium">Additional Details</h4>
-              <p className="text-muted-foreground">{lead.additionalDetails}</p>
+              <p className="text-muted-foreground">{lead.AdditionalDetails}</p>
             </div>
           )}
           
