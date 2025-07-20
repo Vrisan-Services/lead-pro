@@ -1,7 +1,7 @@
 'use client';
 
 import { DollarSign, Users, TrendingUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   Card,
@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const COMMISSION_RATE = 0.10; // 10%
 
 import type { Lead } from "@/lib/types";
+import { redirect } from "next/navigation";
 
 export default function DashboardPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -27,7 +28,7 @@ export default function DashboardPage() {
       try {
         setLoading(true);
         const response = await leadsAPI.getLeads();
-        
+
         if (response.success) {
           // console.log("Leads fetched successfully:", response.data.data.leads); // Debug log
           setLeads(Array.isArray(response.data.data) ? response.data.data : []);
@@ -47,6 +48,102 @@ export default function DashboardPage() {
 
     fetchLeads();
   }, []);
+
+
+  const fetchUserDetails = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      let user = JSON.parse(localStorage.getItem("user") || "{}");
+
+      if (user.Id === undefined) {
+        user = {
+          Id: JSON.parse(
+            document.cookie.replace(
+              /(?:(?:^|.*;\s*)Id\s*=\s*([^;]*).*$)|^.*$/,
+              "$1"
+            )
+          ),
+          Token: JSON.parse(
+            document.cookie.replace(
+              /(?:(?:^|.*;\s*)Token\s*=\s*([^;]*).*$)|^.*$/,
+              "$1"
+            )
+          ),
+          Email: JSON.parse(
+            document.cookie.replace(
+              /(?:(?:^|.*;\s*)Email\s*=\s*([^;]*).*$)|^.*$/,
+              "$1"
+            )
+          ),
+          Session: JSON.parse(
+            document.cookie.replace(
+              /(?:(?:^|.*;\s*)Session\s*=\s*([^;]*).*$)|^.*$/,
+              "$1"
+            )
+          ),
+          Name: JSON.parse(
+            document.cookie.replace(
+              /(?:(?:^|.*;\s*)Name\s*=\s*([^;]*).*$)|^.*$/,
+              "$1"
+            )
+          ),
+          Roles: JSON.parse(
+            document.cookie.replace(
+              /(?:(?:^|.*;\s*)Roles\s*=\s*([^;]*).*$)|^.*$/,
+              "$1"
+            )
+          ),
+        };
+      }
+
+      if (user.Id === undefined || user.Id === "" || user.Id === null || user.Token === undefined || user.Token === "" || user.Token === null || user.Session === undefined || user.Session === "" || user.Session === null) {
+        notSignIn.current();
+      }
+      else {
+        const currentUrl = window.location.pathname;
+        if (currentUrl === "/auth/sign-in") redirect("/dashboard");
+        else redirect(currentUrl);
+      }
+    } catch (err) {
+      notSignIn.current();
+    }
+
+    setLoading(false);
+  }, []);
+
+  let notSignIn = React.useRef(() => { })
+
+  notSignIn.current = () => {
+    const currentUrl = window.location.pathname;
+    if (currentUrl !== "/auth/sign-in" ) {
+      Logout();
+    }
+    else redirect(currentUrl);
+    return;
+  }
+
+    function Logout() {
+    const host = window.location.hostname;
+    // remove any subdomain
+    const domain = host.split(".").slice(-2).join(".");
+
+    document.cookie = `ID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Domain=.${domain};Secure;SameSite=None;`;
+    document.cookie =
+      `Token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Domain=.${domain};Secure;SameSite=None;`;
+    document.cookie = `Email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Domain=.${domain};Secure;SameSite=None;`;
+    document.cookie =
+      `Session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Domain=.${domain};Secure;SameSite=None;`;
+    document.cookie = `Name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Domain=.${domain};Secure;SameSite=None;`;
+    localStorage.clear();
+    sessionStorage.clear();
+    redirect("/auth/sign-in");
+  }
+
+
+  React.useEffect(() => {
+    fetchUserDetails();
+  }, [fetchUserDetails]);
+
 
   if (loading) {
     return (
@@ -104,7 +201,7 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <div className="text-red-500 mb-4">Error: {error}</div>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
@@ -164,10 +261,10 @@ export default function DashboardPage() {
 
       <Card>
         <CardHeader>
-            <CardTitle>Your Leads</CardTitle>
+          <CardTitle>Your Leads</CardTitle>
         </CardHeader>
         <CardContent>
-            <LeadsDataTable leads={leads} />
+          <LeadsDataTable leads={leads} />
         </CardContent>
       </Card>
     </div>
