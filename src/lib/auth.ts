@@ -59,6 +59,7 @@ export const authAPI = {
       City: userData.city,
       ZipCode: userData.zipCode,
       password: userData.password,
+      PartnerGroup: "Channel Partner",
     });
     return response.data;
   },
