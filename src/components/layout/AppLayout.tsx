@@ -2,10 +2,9 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { LayoutDashboard, Upload, Users, Briefcase } from "lucide-react"
+import { redirect, usePathname } from "next/navigation"
+import { LayoutDashboard, Upload, Users, Briefcase, LogOutIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils"
 import {
   SidebarProvider,
   Sidebar,
@@ -20,7 +19,13 @@ import {
 import { Button } from "@/components/ui/button"
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
+  const pathname = usePathname();
+
+  function Logout() {
+    localStorage.clear();
+    sessionStorage.clear();
+    redirect("/auth/sign-in");
+  }
 
   return (
     <SidebarProvider>
@@ -57,6 +62,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <Link href="/upload">
                     <Upload />
                     <span>Upload Leads</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  onClick={Logout}
+                  // isActive={pathname.startsWith("/auth/sign-in")}
+                  tooltip="Logout"
+                >
+                  <Link href="/auth/sign-in">
+                    <LogOutIcon />
+                    <span>Logout</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

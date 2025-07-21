@@ -50,99 +50,45 @@ export default function DashboardPage() {
   }, []);
 
 
-  const fetchUserDetails = React.useCallback(async () => {
-    setLoading(true);
-    try {
-      let user = JSON.parse(localStorage.getItem("user") || "{}");
 
-      if (user.Id === undefined) {
-        user = {
-          Id: JSON.parse(
-            document.cookie.replace(
-              /(?:(?:^|.*;\s*)Id\s*=\s*([^;]*).*$)|^.*$/,
-              "$1"
-            )
-          ),
-          Token: JSON.parse(
-            document.cookie.replace(
-              /(?:(?:^|.*;\s*)Token\s*=\s*([^;]*).*$)|^.*$/,
-              "$1"
-            )
-          ),
-          Email: JSON.parse(
-            document.cookie.replace(
-              /(?:(?:^|.*;\s*)Email\s*=\s*([^;]*).*$)|^.*$/,
-              "$1"
-            )
-          ),
-          Session: JSON.parse(
-            document.cookie.replace(
-              /(?:(?:^|.*;\s*)Session\s*=\s*([^;]*).*$)|^.*$/,
-              "$1"
-            )
-          ),
-          Name: JSON.parse(
-            document.cookie.replace(
-              /(?:(?:^|.*;\s*)Name\s*=\s*([^;]*).*$)|^.*$/,
-              "$1"
-            )
-          ),
-          Roles: JSON.parse(
-            document.cookie.replace(
-              /(?:(?:^|.*;\s*)Roles\s*=\s*([^;]*).*$)|^.*$/,
-              "$1"
-            )
-          ),
-        };
-      }
-
-      if (user.Id === undefined || user.Id === "" || user.Id === null || user.Token === undefined || user.Token === "" || user.Token === null || user.Session === undefined || user.Session === "" || user.Session === null) {
+    const fetchUserDetails = React.useCallback(async () => {
+      try {
+        let user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (user.Id === undefined || user.Id === "" || user.Id === null || user.Token === undefined || user.Token === "" || user.Token === null || user.Session === undefined || user.Session === "" || user.Session === null) {
+          notSignIn.current();
+        }
+      } catch (err) {
         notSignIn.current();
       }
-      else {
-        const currentUrl = window.location.pathname;
-        if (currentUrl === "/auth/sign-in") redirect("/dashboard");
-        else redirect(currentUrl);
+  
+    }, []);
+  
+    let notSignIn = React.useRef(() => { })
+  
+    notSignIn.current = () => {
+      const currentUrl = window.location.pathname;
+      if (currentUrl !== "/auth/sign-in") {
+        Logout();
       }
-    } catch (err) {
-      notSignIn.current();
+      else redirect(currentUrl);
+      return;
     }
-
-    setLoading(false);
-  }, []);
-
-  let notSignIn = React.useRef(() => { })
-
-  notSignIn.current = () => {
-    const currentUrl = window.location.pathname;
-    if (currentUrl !== "/auth/sign-in" ) {
-      Logout();
-    }
-    else redirect(currentUrl);
-    return;
-  }
-
+  
     function Logout() {
-    const host = window.location.hostname;
-    // remove any subdomain
-    const domain = host.split(".").slice(-2).join(".");
+      const host = window.location.hostname;
+      // remove any subdomain
+      localStorage.clear();
+      sessionStorage.clear();
+      redirect("/auth/sign-in");
+    }
+  
+  
+    React.useEffect(() => {
+      fetchUserDetails();
+    }, [fetchUserDetails]);
+  
+  
 
-    document.cookie = `ID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Domain=.${domain};Secure;SameSite=None;`;
-    document.cookie =
-      `Token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Domain=.${domain};Secure;SameSite=None;`;
-    document.cookie = `Email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Domain=.${domain};Secure;SameSite=None;`;
-    document.cookie =
-      `Session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Domain=.${domain};Secure;SameSite=None;`;
-    document.cookie = `Name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;Domain=.${domain};Secure;SameSite=None;`;
-    localStorage.clear();
-    sessionStorage.clear();
-    redirect("/auth/sign-in");
-  }
-
-
-  React.useEffect(() => {
-    fetchUserDetails();
-  }, [fetchUserDetails]);
 
 
   if (loading) {

@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { authAPI } from '@/lib/auth';
 import { PhoneInput } from '@/components/auth/PhoneInput';
@@ -54,6 +54,49 @@ export default function SignInPage() {
       setIsLoading(false);
     }
   };
+
+
+
+
+    const fetchUserDetails = React.useCallback(async () => {
+      try {
+        let user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (user.Id === undefined || user.Id === "" || user.Id === null || user.Token === undefined || user.Token === "" || user.Token === null || user.Session === undefined || user.Session === "" || user.Session === null) {
+          notSignIn.current();
+        }
+      } catch (err) {
+        notSignIn.current();
+      }
+  
+    }, []);
+  
+    let notSignIn = React.useRef(() => { })
+  
+    notSignIn.current = () => {
+      const currentUrl = window.location.pathname;
+      if (currentUrl !== "/auth/sign-in") {
+        Logout();
+      }
+      else redirect(currentUrl);
+      return;
+    }
+  
+    function Logout() {
+      const host = window.location.hostname;
+      // remove any subdomain
+      localStorage.clear();
+      sessionStorage.clear();
+      redirect("/auth/sign-in");
+    }
+  
+  
+    React.useEffect(() => {
+      fetchUserDetails();
+    }, [fetchUserDetails]);
+  
+  
+
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/50 p-4">
